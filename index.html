@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invitación Mágica de Graduación 🪄💻</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Courier New', Courier, monospace; }
+    body { background-color: #0b0c10; color: #c5c6c7; text-align: center; overflow-x: hidden; }
+
+    /* VIDEO DE FONDO */
+    #bg-video {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      object-fit: cover; z-index: 1; filter: brightness(0.8); transition: filter 1.5s ease;
+    }
+
+    /* PANTALLA DE INICIO */
+    #start-screen {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      z-index: 1000; background: rgba(0,0,0,0.9); transition: opacity 1s ease;
+    }
+
+    /* PANTALLA DEL JUEGO */
+    #game-overlay {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+      z-index: 999; opacity: 0; pointer-events: none; transition: opacity 1.5s ease;
+    }
+
+    .terminal {
+      background: rgba(10, 25, 47, 0.92); border: 2px solid #66fcf1; box-shadow: 0 0 25px #66fcf1;
+      padding: 25px; border-radius: 10px; max-width: 90%; width: 450px; text-align: center;
+      backdrop-filter: blur(5px);
+    }
+    .terminal h2 { color: #66fcf1; font-size: 1.2rem; margin-bottom: 15px; text-align: left; }
+    .terminal p { margin-bottom: 15px; color: #45a29e; font-size: 0.9rem; text-align: left; }
+    
+    input[type="text"] {
+      width: 100%; padding: 10px; background: #1f2833; border: 1px solid #66fcf1;
+      color: #fff; font-size: 1rem; margin-bottom: 15px; text-transform: uppercase;
+    }
+    
+    button.btn-magic {
+      width: 100%; padding: 12px; background: #66fcf1; border: none; color: #0b0c10;
+      font-weight: bold; font-size: 1rem; cursor: pointer; border-radius: 5px; transition: 0.2s;
+    }
+    button.btn-magic:hover { background: #45a29e; color: #fff; box-shadow: 0 0 15px #66fcf1; }
+
+    /* CONTENEDOR DE LA IMAGEN INTERACTIVA (EN LUGAR DEL BOTÓN) */
+    .spell-interactive-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 15px;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .spell-png {
+      width: 120px;
+      height: 120px;
+      object-fit: contain;
+      filter: drop-shadow(0 0 10px #66fcf1);
+      transition: transform 0.1s ease, filter 0.2s ease;
+    }
+
+    .spell-png:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 20px #66fcf1);
+    }
+
+    .spell-png:active {
+      transform: scale(0.92);
+      filter: drop-shadow(0 0 30px #ffffff);
+    }
+
+    .spell-counter-badge {
+      margin-top: 10px;
+      background: #1f2833;
+      border: 1px solid #66fcf1;
+      color: #66fcf1;
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-weight: bold;
+      font-size: 0.9rem;
+      box-shadow: 0 0 10px rgba(102, 252, 241, 0.3);
+    }
+
+    /* BOTÓN FLOTANTE PARA MUTE / UNMUTE AUDIO */
+    #audio-control {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      z-index: 1001;
+      background: rgba(10, 25, 47, 0.85);
+      border: 2px solid #66fcf1;
+      color: #66fcf1;
+      padding: 12px 18px;
+      border-radius: 50px;
+      font-weight: bold;
+      cursor: pointer;
+      backdrop-filter: blur(5px);
+      box-shadow: 0 0 15px rgba(102, 252, 241, 0.4);
+      transition: 0.3s;
+      display: none;
+      font-size: 0.9rem;
+    }
+    #audio-control:hover { 
+      background: #66fcf1; 
+      color: #0b0c10; 
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(102, 252, 241, 0.7);
+    }
+
+    /* SECCIÓN DE LA INVITACIÓN */
+    #invitation-content { display: none; padding: 40px 20px; opacity: 0; transition: opacity 2s ease-in; position: relative; z-index: 10; }
+    .card {
+      background: rgba(31, 40, 51, 0.95); border: 1px solid #45a29e; max-width: 800px; margin: auto;
+      padding: 40px; border-radius: 15px; box-shadow: 0 0 30px rgba(102, 252, 241, 0.3);
+      backdrop-filter: blur(10px);
+    }
+    
+    /* GALERÍA DE FOTOS - LAYOUT CON 3 FOTOS */
+    .photo-gallery {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      margin: 30px 0;
+      align-items: center;
+    }
+    
+    .photo-side-left,
+    .photo-side-right {
+      flex: 0 0 110px;
+    }
+    
+    .photo-side-left .profile-img,
+    .photo-side-right .profile-img {
+      width: 110px;
+      height: 280px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid #66fcf1;
+      box-shadow: 0 0 20px rgba(102, 252, 241, 0.5);
+      transition: transform 0.3s ease;
+    }
+    
+    .photo-center {
+      flex: 0 0 auto;
+      display: flex;
+      justify-content: center;
+    }
+    
+    .photo-center .profile-img {
+      width: 280px;
+      height: 320px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 2px solid #66fcf1;
+      box-shadow: 0 0 25px rgba(102, 252, 241, 0.6);
+      transition: transform 0.3s ease;
+    }
+    
+    .profile-img:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 35px rgba(102, 252, 241, 0.9);
+    }
+
+    h1 { color: #66fcf1; font-size: 2.5rem; margin-bottom: 10px; text-shadow: 0 0 10px #66fcf1; }
+    .badge { background: #45a29e; color: #0b0c10; padding: 8px 12px; border-radius: 5px; font-weight: bold; font-size: 0.9rem; }
+    
+    /* CUENTA REGRESIVA MEJORADA */
+    .countdown-container {
+      margin: 25px 0;
+      background: rgba(15, 23, 42, 0.8);
+      border: 2px solid #66fcf1;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: inset 0 0 15px rgba(102, 252, 241, 0.2);
+    }
+    .countdown-title {
+      color: #45a29e;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 12px;
+      font-weight: bold;
+    }
+    .timer {
+      display: flex;
+      justify-content: space-around;
+      color: #66fcf1;
+      font-weight: bold;
+      gap: 10px;
+    }
+    .time-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+    .time-number {
+      font-size: 2rem;
+      text-shadow: 0 0 10px #66fcf1;
+      line-height: 1;
+      min-width: 60px;
+    }
+    .time-label {
+      font-size: 0.75rem;
+      color: #c5c6c7;
+      text-transform: uppercase;
+      margin-top: 5px;
+    }
+
+    .details { margin: 25px 0; text-align: left; line-height: 1.9; }
+    .details p { margin-bottom: 12px; }
+    .details span { color: #66fcf1; font-weight: bold; }
+    
+    .btn-container { display: flex; flex-direction: column; gap: 12px; justify-content: center; margin-top: 25px; }
+    
+    .btn-action {
+      width: 100%; padding: 14px 15px; background: #1f2833; color: #66fcf1;
+      border: 1px solid #66fcf1; text-decoration: none; border-radius: 8px; font-weight: bold;
+      cursor: pointer; transition: 0.3s; display: inline-block; text-align: center;
+    }
+    .btn-action:hover { background: #66fcf1; color: #0b0c10; box-shadow: 0 0 15px rgba(102, 252, 241, 0.4); }
+    
+    /* ESTILO ESPECIAL PARA EL BOTÓN DE WHATSAPP */
+    .btn-whatsapp {
+      background: #25D366; color: #0b0c10; border-color: #25D366;
+    }
+    .btn-whatsapp:hover {
+      background: #1eb857; color: #ffffff; border-color: #1eb857; box-shadow: 0 0 15px rgba(37, 211, 102, 0.5);
+    }
+
+    /* FOOTER MÁGICO */
+    .print-footer { 
+      display: none;
+      margin-top: 25px;
+      font-style: italic;
+      color: #45a29e;
+      font-size: 0.9rem;
+      text-align: center;
+      border-top: 1px dashed #66fcf1;
+      padding-top: 15px;
+    }
+
+    /* REGLAS PARA IMPRESIÓN / DESCARGA PDF TEMÁTICA HARRY POTTER + SOFTWARE */
+    @media print {
+      #bg-video, #start-screen, #game-overlay, .btn-container, #audio-control { display: none !important; }
+      
+      body { 
+        background: linear-gradient(135deg, #0b0c10 0%, #1a2236 100%) !important; 
+        color: #c5c6c7 !important; 
+        -webkit-print-color-adjust: exact; 
+        print-color-adjust: exact; 
+      }
+      
+      #invitation-content { display: block !important; opacity: 1 !important; padding: 15px; }
+      
+      .card {
+        background: linear-gradient(to bottom, #0f172a, #1a2236) !important;
+        border: 3px solid #66fcf1 !important;
+        box-shadow: 0 0 40px rgba(102, 252, 241, 0.6) !important;
+        color: #c5c6c7 !important;
+        page-break-inside: avoid;
+        position: relative;
+      }
+      
+      .card::before {
+        content: "⚡ TRAVESURA REALIZADA ⚡";
+        position: absolute;
+        top: 10px;
+        right: 20px;
+        color: #66fcf1;
+        font-size: 0.8rem;
+        font-weight: bold;
+        opacity: 0.7;
+      }
+      
+      h1 { 
+        color: #66fcf1 !important; 
+        font-size: 2.2rem !important;
+        text-shadow: 0 0 10px rgba(102, 252, 241, 0.5) !important;
+      }
+      
+      .details span { color: #66fcf1 !important; }
+      
+      .badge { 
+        background: #66fcf1 !important; 
+        color: #0b0c10 !important;
+        display: inline-block;
+        box-shadow: 0 0 10px rgba(102, 252, 241, 0.4) !important;
+      }
+      
+      .profile-img { 
+        border: 2px solid #66fcf1 !important; 
+        box-shadow: 0 0 15px rgba(102, 252, 241, 0.3) !important;
+      }
+      
+      .countdown-container {
+        display: none !important;
+      }
+      
+      .print-footer {
+        display: block !important;
+        color: #45a29e;
+        border-top: 2px solid #66fcf1 !important;
+        border-bottom: 2px solid #66fcf1 !important;
+        padding: 12px 0;
+      }
+      
+      .timer { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BOTÓN FLOTANTE PARA MUTE -->
+  <button id="audio-control" onclick="toggleMute()">🔊 SONIDO ON</button>
+
+  <!-- VIDEO EN MOVIMIENTO DE FONDO -->
+  <video id="bg-video" playsinline autoplay muted>
+    <source src="dementor.mp4" type="video/mp4">
+  </video>
+
+  <!-- ELEMENTO DE AUDIO DE FONDO -->
+  <audio id="bg-music" src="musica.mp3" loop></audio>
+
+  <!-- PANTALLA 0: BOTÓN DE ACTIVACIÓN -->
+  <div id="start-screen">
+    <h1 style="margin-bottom: 20px; text-shadow: 0 0 10px #66fcf1;">⚡ Módulo Mágico Detectado ⚡</h1>
+    <button class="btn-magic" style="width: auto; padding: 15px 30px; font-size: 1.1rem;" onclick="playCinematicIntro()">[ INICIAR EXPERIENCIA ]</button>
+  </div>
+
+  <!-- PANTALLA 1: JUEGO DEL DEMENTOR -->
+  <div id="game-overlay">
+    <div class="terminal">
+      <h2>⚠️ DEMENTOR DETECTADO</h2>
+      <p>> System Error: Acceso bloqueado por Magia Oscura.<br>> Completa la función para cargar el hechizo:</p>
+      
+      <!-- Paso 1: Escribir Hechizo -->
+      <div id="step-1">
+        <p><strong>Hechizo:</strong> EX_ _ _ _O PATR_ _ _M</p>
+        <input type="text" id="spell-input" placeholder="ESCRIBE EL HECHIZO AQUÍ..." autocomplete="off">
+        <button class="btn-magic" onclick="checkSpell()">Compilar Hechizo ⚡</button>
+      </div>
+
+      <!-- Paso 2: Clics Rápidos con IMAGEN PNG INTERACTIVA -->
+      <div id="step-2" style="display: none;">
+        <p style="color: #66fcf1; text-align: center;">¡HECHIZO COMPILADO!<br>Pulsa sobre mi repetidamente para canalizar la energía:</p>
+        
+        <div class="spell-interactive-container" onclick="chargePatronus()">
+          <img src="hechizo.png" alt="Invocación Mágica" class="spell-png" id="spell-img">
+          <div class="spell-counter-badge">
+            ⚡ CANALIZANDO: [<span id="clicks">0</span>/10]
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PANTALLA 2: LA INVITACIÓN PERSONALIZADA -->
+  <div id="invitation-content">
+    <div class="card">
+      <p class="badge">BUILD SUCCESSFUL 🎓⚡</p>
+      
+      <!-- GALERÍA DE FOTOS: IZQUIERDA + CENTRO + DERECHA -->
+      <div class="photo-gallery">
+        <div class="photo-side-left">
+          <img src="foto2.jpg" alt="Foto Graduado Izquierda" class="profile-img">
+        </div>
+        <div class="photo-center">
+          <img src="foto1.jpg" alt="Foto Graduado Central" class="profile-img">
+        </div>
+        <div class="photo-side-right">
+          <img src="foto3.jpg" alt="Foto Graduado Derecha" class="profile-img">
+        </div>
+      </div>
+
+      <h1>¡Mi Graduación!</h1>
+      <p style="color: #8892b0; font-size: 1.1rem; margin-bottom: 15px;">Ingeniería en Software • Class of 2026</p>
+      
+      <!-- RELOJ DE CUENTA REGRESIVA EN VIVO -->
+      <div class="countdown-container">
+        <div class="countdown-title">⚡ Tiempo restante para la ejecución:</div>
+        <div class="timer">
+          <div class="time-box">
+            <span id="days" class="time-number">00</span>
+            <span class="time-label">Días</span>
+          </div>
+          <div class="time-box">
+            <span id="hours" class="time-number">00</span>
+            <span class="time-label">Horas</span>
+          </div>
+          <div class="time-box">
+            <span id="minutes" class="time-number">00</span>
+            <span class="time-label">Minutos</span>
+          </div>
+          <div class="time-box">
+            <span id="seconds" class="time-number">00</span>
+            <span class="time-label">Segundos</span>
+          </div>
+        </div>
+      </div>
+
+      <hr style="border-color: #45a29e; margin: 20px 0;">
+
+      <div class="details">
+        <p>📅 <strong>Fecha:</strong> <span>Miércoles, 19 de Agosto de 2026</span></p>
+        <p>⏰ <strong>Hora:</strong> <span>16:00 hrs</span></p>
+        <p>📍 <strong>Lugar:</strong> <span>En casa (Hogwarts)</span></p>
+      </div>
+
+      <div class="btn-container">
+        <!-- BOTÓN DE CONFIRMACIÓN POR WHATSAPP -->
+        <a href="https://wa.me/527714307510?text=%C2%A1Hola!%20Confirmo%20mi%20asistencia%20a%20tu%20graduaci%C3%B3n%20%F0%9F%92%BB%F0%9F%AA%84%F0%9F%8E%93%E2%9C%A8" target="_blank" class="btn-action btn-whatsapp">
+          💬 Confirmar Asistencia por WhatsApp
+        </a>
+
+        <!-- MAPA DE UBICACIÓN -->
+        <a href="https://maps.app.goo.gl/xZNSejS3u3n92CCR6?g_st=aw" target="_blank" class="btn-action">
+          🗺️ Abrir en Google Maps
+        </a>
+        
+        <!-- DESCARGA PDF -->
+        <button onclick="window.print()" class="btn-action">
+          📥 Descargar / Guardar PDF Mágico
+        </button>
+      </div>
+
+      <div class="print-footer">
+        "Travesura Realizada • Mischief Managed • Executing success.exe" 🪄💻
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let clickCount = 0;
+    let isMuted = false;
+    const bgVideo = document.getElementById('bg-video');
+    const bgMusic = document.getElementById('bg-music');
+    const audioBtn = document.getElementById('audio-control');
+
+    // ========== FUNCIÓN PARA MUTEAR / DESMUTEAR AUDIO ==========
+    function toggleMute() {
+      isMuted = !isMuted;
+      bgMusic.muted = isMuted;
+      audioBtn.textContent = isMuted ? "🔇 SONIDO OFF" : "🔊 SONIDO ON";
+    }
+
+    // ========== FUNCIÓN PARA INICIAR LA CINEMÁTICA ==========
+    function playCinematicIntro() {
+      const startScreen = document.getElementById('start-screen');
+      startScreen.style.opacity = '0';
+      setTimeout(() => {
+        startScreen.style.display = 'none';
+        bgVideo.muted = isMuted;
+        bgVideo.play();
+        audioBtn.style.display = 'block';
+      }, 1000);
+    }
+
+    // ========== CUANDO EL VIDEO TERMINA, INICIA EL JUEGO ==========
+    bgVideo.onended = function() {
+      const gameOverlay = document.getElementById('game-overlay');
+      bgVideo.muted = true;
+      bgVideo.style.filter = 'brightness(0.5)';
+      bgVideo.loop = true;
+      bgVideo.play();
+
+      if (!isMuted) bgMusic.play();
+
+      gameOverlay.style.opacity = '1';
+      gameOverlay.style.pointerEvents = 'all';
+    };
+
+    // ========== VALIDAR EL HECHIZO ==========
+    function checkSpell() {
+      const input = document.getElementById('spell-input').value.trim().toUpperCase();
+      if (input === 'EXPECTO PATRONUM' || input === 'EXPECTO_PATRONUM') {
+        document.getElementById('step-1').style.display = 'none';
+        document.getElementById('step-2').style.display = 'block';
+      } else {
+        alert('❌ Hechizo incorrecto. ¡Asegúrate de escribir EXPECTO PATRONUM!');
+      }
+    }
+
+    // ========== CARGAR EL PATRONUS CON TOCAR LA IMAGEN ==========
+    function chargePatronus() {
+      clickCount++;
+      document.getElementById('clicks').innerText = clickCount;
+
+      if (clickCount >= 10) {
+        const overlay = document.getElementById('game-overlay');
+        const content = document.getElementById('invitation-content');
+        
+        bgVideo.style.filter = 'brightness(0.2)';
+        overlay.style.opacity = '0';
+        
+        setTimeout(() => {
+          overlay.style.display = 'none';
+          content.style.display = 'block';
+          setTimeout(() => { content.style.opacity = '1'; }, 50);
+          startCountdown();
+        }, 1500);
+      }
+    }
+
+    // ========== LÓGICA DE LA CUENTA REGRESIVA EN VIVO ==========
+    // FECHA Y HORA DEL EVENTO: 19 de Agosto de 2026 a las 16:00 hrs
+    const eventDate = new Date("August 19, 2026 16:00:00").getTime();
+
+    function startCountdown() {
+      updateCountdown();
+      setInterval(updateCountdown, 1000);
+    }
+
+    function updateCountdown() {
+      const now = new Date().getTime();
+      const distance = eventDate - now;
+
+      if (distance < 0) {
+        document.querySelector('.countdown-container').innerHTML = "<div style='color:#66fcf1; font-weight:bold; font-size: 1.3rem;'>🎓 ¡EL EVENTO HA COMENZADO! ⚡</div>";
+        return;
+      }
+
+      const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+      const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+      const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+      document.getElementById('days').textContent = String(days).padStart(2, '0');
+      document.getElementById('hours').textContent = String(hours).padStart(2, '0');
+      document.getElementById('minutes').textContent = String(minutes).padStart(2, '0');
+      document.getElementById('seconds').textContent = String(seconds).padStart(2, '0');
+    }
+  </script>
+
+</body>
+</html>
