@@ -175,8 +175,32 @@
       box-shadow: 0 0 25px rgba(102, 252, 241, 0.6);
     }
 
-    /* ADAPTACIÓN DE FOTOS EN MÓVILES PEQUEÑOS (SIN RECORTE) */
+    /* AJUSTES PARA MÓVILES: INTRO, VIDEO Y FOTOS */
     @media (max-width: 600px) {
+      /* 1. Hace el video más visible y mejor centrado en pantalla vertical */
+      #bg-video {
+        filter: brightness(0.95) !important;
+        object-position: center center;
+      }
+
+      /* 2. Pantalla del juego más limpia para no tapar el video */
+      .terminal {
+        max-width: 90%;
+        padding: 15px;
+        background: rgba(10, 25, 47, 0.78) !important; /* Más transparente */
+        backdrop-filter: blur(4px) !important;
+      }
+
+      .terminal h2 {
+        font-size: 1rem;
+      }
+
+      .terminal p {
+        font-size: 0.82rem;
+        margin-bottom: 10px;
+      }
+
+      /* 3. Fotos sin recortes */
       .photo-gallery {
         flex-direction: column;
         gap: 20px;
@@ -190,14 +214,14 @@
       .photo-side-right .profile-img, 
       .photo-center .profile-img {
         width: 100%;
-        max-width: 280px; /* Ancho cómodo en celular */
-        height: auto;     /* Mantiene la proporción completa sin mochar la cabeza/pies */
-        aspect-ratio: 4/5; /* Hace que todas tengan un encuadre bonito y uniforme */
+        max-width: 280px;
+        height: auto;
+        aspect-ratio: 4/5;
         object-fit: cover;
-        object-position: top center; /* Prioriza enfocar desde la cabeza */
+        object-position: top center;
       }
       .photo-center {
-        order: -1; /* La foto principal sigue saliendo primero arriba */
+        order: -1;
       }
     }
 
