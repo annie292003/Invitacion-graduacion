@@ -175,23 +175,29 @@
       box-shadow: 0 0 25px rgba(102, 252, 241, 0.6);
     }
 
-    /* ADAPTACIÓN DE FOTOS EN MÓVILES PEQUEÑOS */
+    /* ADAPTACIÓN DE FOTOS EN MÓVILES PEQUEÑOS (SIN RECORTE) */
     @media (max-width: 600px) {
       .photo-gallery {
         flex-direction: column;
-        gap: 15px;
+        gap: 20px;
       }
-      .photo-side-left, .photo-side-right {
-        flex: 0 0 auto;
+      .photo-side-left, .photo-side-right, .photo-center {
         width: 100%;
+        display: flex;
+        justify-content: center;
       }
-      .photo-side-left .profile-img, .photo-side-right .profile-img {
+      .photo-side-left .profile-img, 
+      .photo-side-right .profile-img, 
+      .photo-center .profile-img {
         width: 100%;
-        max-width: 220px;
-        height: 180px;
+        max-width: 280px; /* Ancho cómodo en celular */
+        height: auto;     /* Mantiene la proporción completa sin mochar la cabeza/pies */
+        aspect-ratio: 4/5; /* Hace que todas tengan un encuadre bonito y uniforme */
+        object-fit: cover;
+        object-position: top center; /* Prioriza enfocar desde la cabeza */
       }
       .photo-center {
-        order: -1; /* Mantiene la foto principal arriba en celulares */
+        order: -1; /* La foto principal sigue saliendo primero arriba */
       }
     }
 
